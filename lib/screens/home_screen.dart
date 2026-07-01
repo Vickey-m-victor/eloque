@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              'SpeakFlow',
+              'Eloque',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,

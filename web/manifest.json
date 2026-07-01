@@ -1,6 +1,6 @@
 {
-    "name": "speakflow",
-    "short_name": "speakflow",
+    "name": "eloque",
+    "short_name": "eloque",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

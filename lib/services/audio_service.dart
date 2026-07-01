@@ -59,7 +59,7 @@ class AudioService {
   Future<String> getUniqueFilePath() async {
     final Directory appDirectory = await getApplicationDocumentsDirectory();
     final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-    return '${appDirectory.path}/speakflow_recording_$timestamp.m4a';
+    return '${appDirectory.path}/eloque_recording_$timestamp.m4a';
   }
 
   void dispose() {

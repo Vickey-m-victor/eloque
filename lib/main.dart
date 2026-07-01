@@ -10,11 +10,11 @@ import 'utils/theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const SpeakFlowApp());
+  runApp(const EloqueApp());
 }
 
-class SpeakFlowApp extends StatelessWidget {
-  const SpeakFlowApp({super.key});
+class EloqueApp extends StatelessWidget {
+  const EloqueApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class SpeakFlowApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
-            title: 'SpeakFlow',
+            title: 'Eloque',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
