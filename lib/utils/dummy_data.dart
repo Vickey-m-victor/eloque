@@ -1,0 +1,49 @@
+import '../models/lesson.dart';
+
+const List<Lesson> dummyLessons = [
+  Lesson(
+    id: '1',
+    title: 'The Perfect Elevator Pitch',
+    description: 'Master the art of introducing yourself and your business idea in under 60 seconds with maximum impact.',
+    category: 'Business English',
+    difficulty: 'Beginner',
+    estimatedMinutes: 2,
+    content: 'Hi everyone, my name is Alex. Have you ever wondered why we spend hours managing emails when we could automate them? That is why we built FlowMail. Our platform uses AI to summarize, prioritize, and draft responses to your daily emails. It saves busy professionals up to ten hours a week. We are currently launching our beta program and looking for early testers. If you want to take control of your inbox, come talk to me after the session. Thank you!',
+  ),
+  Lesson(
+    id: '2',
+    title: 'The Power of the Pause',
+    description: 'Learn how to use silence as a powerful rhetorical device to emphasize key arguments and capture attention.',
+    category: 'Public Speaking',
+    difficulty: 'Intermediate',
+    estimatedMinutes: 3,
+    content: 'Think about the last time you heard a truly great speech. What made it memorable? Was it the speed? The volume? Or was it... the silence? (Pause) Silence is not empty space. Silence is where ideas land. It is the moment the listener processes what you just said. When you speak without pausing, your ideas run together like wet paint. But when you pause, you create structure. You build anticipation. So, next time you make an important point... let it breathe.',
+  ),
+  Lesson(
+    id: '3',
+    title: 'Delivering Project Status Updates',
+    description: 'Deliver clear, structured, and confident updates on project timelines, bottlenecks, and next steps to stakeholders.',
+    category: 'Business English',
+    difficulty: 'Intermediate',
+    estimatedMinutes: 2,
+    content: 'Good morning stakeholders. Today, I want to give you a quick update on Project Nebula. First, the good news: we have completed the core backend architecture and all API integrations are running ahead of schedule. However, we are currently facing a minor bottleneck with our user testing group, which has delayed the UI feedback phase by about four days. To address this, we have onboarding additional external testers today. We are confident we will make up the time and still hit our target release date of June fifteenth. I am happy to take any questions.',
+  ),
+  Lesson(
+    id: '4',
+    title: 'Ordering Food at a Busy Cafe',
+    description: 'Practice natural vocabulary and conversational flow for ordering food, customizing drinks, and paying.',
+    category: 'Everyday English',
+    difficulty: 'Beginner',
+    estimatedMinutes: 1,
+    content: 'Hi there! I would like to get a medium iced caramel macchiato, please. Oh, and could you make that with oat milk instead of whole milk? Yes, that is perfect. I will also grab one of those warmed chocolate croissants from the display case. That will be for dine-in. Can I pay with apple pay? Great. Thank you so much, have a wonderful day!',
+  ),
+  Lesson(
+    id: '5',
+    title: 'Debating with Grace and Logic',
+    description: 'Advanced techniques for acknowledging opposing views, stating your counter-arguments, and maintaining professional poise.',
+    category: 'Public Speaking',
+    difficulty: 'Advanced',
+    estimatedMinutes: 4,
+    content: 'While I understand the concern that adopting remote work permanently might affect team cohesion, we must look at the empirical data. Over the past twelve months, our productivity has increased by fifteen percent, and employee turnover has hit an all-time low. The argument that cohesion is lost assumes that collaboration only happens when sharing physical desks. On the contrary, with structured digital standups and dedicated virtual social hours, we can cultivate an even more inclusive team culture. Let us not revert to outdated structures out of fear, but rather build the future of work based on performance.',
+  ),
+];

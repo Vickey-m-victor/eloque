@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "813020050540",
+    "project_id": "speakflow-12b54",
+    "storage_bucket": "speakflow-12b54.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813020050540:android:fc680a79717c72a2b91449",
+        "android_client_info": {
+          "package_name": "com.example.speakflow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCs-OB_h-Ma6fa4hgF28l9AqdeJCqNmPFA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
