@@ -1,3 +1,8 @@
+enum LessonTrack {
+  conversational,
+  interviewPrep,
+}
+
 class Lesson {
   final String id;
   final String title;
@@ -6,6 +11,7 @@ class Lesson {
   final String category;
   final String difficulty; // 'Beginner', 'Intermediate', 'Advanced'
   final int estimatedMinutes;
+  final LessonTrack track;
 
   const Lesson({
     required this.id,
@@ -15,6 +21,7 @@ class Lesson {
     required this.category,
     required this.difficulty,
     required this.estimatedMinutes,
+    this.track = LessonTrack.conversational,
   });
 
   List<String> get sentences {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/lesson_provider.dart';
 import '../widgets/lesson_card.dart';
+import '../models/lesson.dart';
 import 'teleprompter_screen.dart';
 
 class LessonSelectionScreen extends StatelessWidget {
@@ -26,6 +27,51 @@ class LessonSelectionScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Track Selector
+            Padding(
+              padding: const EdgeInsets.only(left: 20, top: 12, bottom: 8),
+              child: Text(
+                'Practice Track',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  _buildTrackButton(
+                    theme,
+                    label: 'Conversational',
+                    icon: Icons.chat_bubble_outline_rounded,
+                    selected: lessonProvider.selectedTrack == LessonTrack.conversational,
+                    onTap: () {
+                      if (lessonProvider.selectedTrack == LessonTrack.conversational) {
+                        lessonProvider.selectTrack(null);
+                      } else {
+                        lessonProvider.selectTrack(LessonTrack.conversational);
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  _buildTrackButton(
+                    theme,
+                    label: 'Interview Prep',
+                    icon: Icons.work_outline_rounded,
+                    selected: lessonProvider.selectedTrack == LessonTrack.interviewPrep,
+                    onTap: () {
+                      if (lessonProvider.selectedTrack == LessonTrack.interviewPrep) {
+                        lessonProvider.selectTrack(null);
+                      } else {
+                        lessonProvider.selectTrack(LessonTrack.interviewPrep);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
             // Category Selector
             Padding(
               padding: const EdgeInsets.only(left: 20, top: 12, bottom: 4),
@@ -159,6 +205,50 @@ class LessonSelectionScreen extends StatelessWidget {
                     ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrackButton(
+    ThemeData theme, {
+    required String label,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          decoration: BoxDecoration(
+            color: selected ? theme.colorScheme.primary : theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected ? theme.colorScheme.primary : theme.colorScheme.outlineVariant,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: selected ? Colors.white : theme.colorScheme.onBackground,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? Colors.white : theme.colorScheme.onBackground,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

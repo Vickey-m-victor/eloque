@@ -9,6 +9,7 @@ const List<Lesson> dummyLessons = [
     difficulty: 'Beginner',
     estimatedMinutes: 2,
     content: 'Hi everyone, my name is Alex. Have you ever wondered why we spend hours managing emails when we could automate them? That is why we built FlowMail. Our platform uses AI to summarize, prioritize, and draft responses to your daily emails. It saves busy professionals up to ten hours a week. We are currently launching our beta program and looking for early testers. If you want to take control of your inbox, come talk to me after the session. Thank you!',
+    track: LessonTrack.conversational,
   ),
   Lesson(
     id: '2',
@@ -18,6 +19,7 @@ const List<Lesson> dummyLessons = [
     difficulty: 'Intermediate',
     estimatedMinutes: 3,
     content: 'Think about the last time you heard a truly great speech. What made it memorable? Was it the speed? The volume? Or was it... the silence? (Pause) Silence is not empty space. Silence is where ideas land. It is the moment the listener processes what you just said. When you speak without pausing, your ideas run together like wet paint. But when you pause, you create structure. You build anticipation. So, next time you make an important point... let it breathe.',
+    track: LessonTrack.conversational,
   ),
   Lesson(
     id: '3',
@@ -27,6 +29,7 @@ const List<Lesson> dummyLessons = [
     difficulty: 'Intermediate',
     estimatedMinutes: 2,
     content: 'Good morning stakeholders. Today, I want to give you a quick update on Project Nebula. First, the good news: we have completed the core backend architecture and all API integrations are running ahead of schedule. However, we are currently facing a minor bottleneck with our user testing group, which has delayed the UI feedback phase by about four days. To address this, we have onboarding additional external testers today. We are confident we will make up the time and still hit our target release date of June fifteenth. I am happy to take any questions.',
+    track: LessonTrack.conversational,
   ),
   Lesson(
     id: '4',
@@ -36,6 +39,7 @@ const List<Lesson> dummyLessons = [
     difficulty: 'Beginner',
     estimatedMinutes: 1,
     content: 'Hi there! I would like to get a medium iced caramel macchiato, please. Oh, and could you make that with oat milk instead of whole milk? Yes, that is perfect. I will also grab one of those warmed chocolate croissants from the display case. That will be for dine-in. Can I pay with apple pay? Great. Thank you so much, have a wonderful day!',
+    track: LessonTrack.conversational,
   ),
   Lesson(
     id: '5',
@@ -45,5 +49,37 @@ const List<Lesson> dummyLessons = [
     difficulty: 'Advanced',
     estimatedMinutes: 4,
     content: 'While I understand the concern that adopting remote work permanently might affect team cohesion, we must look at the empirical data. Over the past twelve months, our productivity has increased by fifteen percent, and employee turnover has hit an all-time low. The argument that cohesion is lost assumes that collaboration only happens when sharing physical desks. On the contrary, with structured digital standups and dedicated virtual social hours, we can cultivate an even more inclusive team culture. Let us not revert to outdated structures out of fear, but rather build the future of work based on performance.',
+    track: LessonTrack.conversational,
+  ),
+  // Interview Prep Lessons (Structured around behavioral questions & answer prompts)
+  Lesson(
+    id: '6',
+    title: 'Tell Me About a Time You Failed',
+    description: 'Structure your failure story using the STAR method: Situation, Task, Action, and the positive Lesson learned.',
+    category: 'Interview Prep',
+    difficulty: 'Intermediate',
+    estimatedMinutes: 3,
+    content: '[Situation & Task] Describe a specific challenge you faced in your past role where things did not go as planned. [Action] Explain what you personally did to manage the situation and address the issue. [Result] Share what happened in the end. [Key Lesson] Most importantly, highlight what you learned from this failure and how you improved your working methods as a result.',
+    track: LessonTrack.interviewPrep,
+  ),
+  Lesson(
+    id: '7',
+    title: 'Why Do You Want This Role?',
+    description: 'Connect your personal values, professional skills, and career aspirations to the company mission.',
+    category: 'Interview Prep',
+    difficulty: 'Beginner',
+    estimatedMinutes: 2,
+    content: '[Hook] Start with what excites you most about the company or product. [Alignment] Explain how your core skills and experiences match the responsibilities of the role. [Future Goal] Discuss how this position fits into your long-term career growth. [Summary] Conclude with how you plan to add immediate value to the team.',
+    track: LessonTrack.interviewPrep,
+  ),
+  Lesson(
+    id: '8',
+    title: 'Describe a Conflict at Work',
+    description: 'Demonstrate professional maturity by explaining how you resolved a difference of opinion constructively.',
+    category: 'Interview Prep',
+    difficulty: 'Advanced',
+    estimatedMinutes: 3,
+    content: '[Context] Introduce the disagreement or conflict of interest with a colleague or client. [Resolution Plan] Detail how you initiated a private conversation to find common ground. [Execution] Describe the compromise or collaborative solution you arrived at. [Professional Growth] Highlight how this conflict strengthened the professional relationship and project outcome.',
+    track: LessonTrack.interviewPrep,
   ),
 ];

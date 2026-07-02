@@ -1,6 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/audio_service.dart';
+import '../services/transcription_service.dart';
+import '../services/scoring_service.dart';
+import '../models/lesson.dart';
+import '../models/practice_result.dart';
+import 'progress_provider.dart';
 
 class TeleprompterProvider with ChangeNotifier {
   final AudioService _audioService = AudioService();
@@ -9,6 +15,7 @@ class TeleprompterProvider with ChangeNotifier {
   double _wpm = 140.0; // Words Per Minute (speed)
   bool _isPlaying = false;
   bool _isRecording = false;
+  bool _isProcessingResult = false;
   TextAlign _textAlign = TextAlign.center;
 
   int _elapsedSeconds = 0;
@@ -236,6 +243,60 @@ class TeleprompterProvider with ChangeNotifier {
   void _stopTimer() {
     _timer?.cancel();
     _timer = null;
+  }
+
+  bool get isProcessingResult => _isProcessingResult;
+
+  Future<PracticeResult?> finishAndScoreSession({
+    required Lesson lesson,
+    required ProgressProvider progressProvider,
+  }) async {
+    if (_isProcessingResult) return null;
+    _isProcessingResult = true;
+    _recordingError = null;
+    notifyListeners();
+
+    try {
+      // 1. Stop recording and get path
+      String? path = _recordingFilePath;
+      if (_isRecording) {
+        path = await stopAndSaveRecording();
+      } else {
+        await stopAll();
+      }
+
+      // Fallback for simulation / mock when microphone wasn't toggled
+      if (path == null || path.isEmpty) {
+        path = await _audioService.getUniqueFilePath();
+        final file = File(path);
+        await file.writeAsString('mock audio content');
+      }
+
+      // 2. Transcribe
+      final transcriptionService = TranscriptionService();
+      final transcript = await transcriptionService.transcribe(path, referenceText: lesson.content);
+
+      // 3. Score
+      final scoringService = ScoringService();
+      final result = scoringService.score(
+        lesson: lesson,
+        transcript: transcript,
+        sessionDuration: Duration(seconds: _elapsedSeconds),
+        audioFilePath: path,
+        targetWpm: _wpm.round(),
+      );
+
+      // 4. Save result
+      progressProvider.saveResult(result);
+      return result;
+    } catch (e) {
+      _recordingError = 'Processing failed: $e';
+      print('Error in finishAndScoreSession: $e');
+      rethrow;
+    } finally {
+      _isProcessingResult = false;
+      notifyListeners();
+    }
   }
 
   @override

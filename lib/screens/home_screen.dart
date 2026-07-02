@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/lesson_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/progress_provider.dart';
 import '../models/lesson.dart';
 import '../widgets/lesson_card.dart';
 import 'teleprompter_screen.dart';
@@ -14,6 +15,7 @@ class HomeScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final lessonProvider = Provider.of<LessonProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final progressProvider = Provider.of<ProgressProvider>(context);
 
     // Get a couple of lessons for the Home screen suggestions
     final featuredLessons = lessonProvider.allLessons.take(2).toList();
@@ -27,6 +29,7 @@ class HomeScreen extends StatelessWidget {
       difficulty: 'Intermediate',
       estimatedMinutes: 1,
       content: 'Great things are not done by impulse, but by a series of small things brought together. (Pause) Everyday, we take tiny steps. Each word we pronounce correctly, each phrase we practice with confidence, builds towards our fluency. Do not be discouraged by slow progress. Keep moving forward, keep speaking, and trust the process. You are getting better every single day.',
+      track: LessonTrack.conversational,
     );
 
     return Scaffold(
@@ -101,7 +104,7 @@ class HomeScreen extends StatelessWidget {
                     child: _buildStatCard(
                       context,
                       title: 'Streak',
-                      value: '${lessonProvider.streakDays} days',
+                      value: '${progressProvider.streakDays} days',
                       icon: Icons.local_fire_department_rounded,
                       iconColor: const Color(0xFFFB923C), // Warm Orange
                     ),
@@ -111,7 +114,7 @@ class HomeScreen extends StatelessWidget {
                     child: _buildStatCard(
                       context,
                       title: 'Practice Time',
-                      value: '${lessonProvider.totalPracticeMinutes} mins',
+                      value: '${progressProvider.totalPracticeMinutes} mins',
                       icon: Icons.schedule_rounded,
                       iconColor: const Color(0xFF06B6D4), // Cyan
                     ),
@@ -121,7 +124,7 @@ class HomeScreen extends StatelessWidget {
                     child: _buildStatCard(
                       context,
                       title: 'Avg. Fluency',
-                      value: '${lessonProvider.averageFluencyScore}%',
+                      value: '${progressProvider.averageFluencyScore}%',
                       icon: Icons.insights_rounded,
                       iconColor: const Color(0xFF10B981), // Emerald
                     ),

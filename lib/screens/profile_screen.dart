@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/lesson_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/progress_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -20,15 +21,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final lessonProvider = Provider.of<LessonProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final progressProvider = Provider.of<ProgressProvider>(context);
 
     // Calculate level based on completed lessons
-    final int userLevel = 1 + (lessonProvider.completedLessonsCount ~/ 3);
+    final int userLevel = 1 + (progressProvider.completedLessonsCount ~/ 3);
     final int nextLevelLessons = (userLevel * 3);
     final int prevLevelLessons = (userLevel - 1) * 3;
-    final double levelProgress = ((lessonProvider.completedLessonsCount - prevLevelLessons) / 3).clamp(0.0, 1.0);
+    final double levelProgress = ((progressProvider.completedLessonsCount - prevLevelLessons) / 3).clamp(0.0, 1.0);
 
     // Calculate daily goal progress
-    final double dailyGoalProgress = (lessonProvider.totalPracticeMinutes / _dailyGoalMinutes).clamp(0.0, 1.0);
+    final double dailyGoalProgress = (progressProvider.totalPracticeMinutes / _dailyGoalMinutes).clamp(0.0, 1.0);
 
     return Scaffold(
       appBar: AppBar(
@@ -58,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 24),
 
               // 2. Statistics Grid
-              _buildStatsGrid(context, lessonProvider, theme),
+              _buildStatsGrid(context, progressProvider, theme),
               const SizedBox(height: 28),
 
               // 3. Daily Practice Goal
@@ -184,7 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatsGrid(BuildContext context, LessonProvider provider, ThemeData theme) {
+  Widget _buildStatsGrid(BuildContext context, ProgressProvider provider, ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

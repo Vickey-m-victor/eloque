@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/lesson_provider.dart';
 import '../providers/teleprompter_provider.dart';
+import '../providers/progress_provider.dart';
+import '../models/practice_result.dart';
 import '../widgets/teleprompter_controls.dart';
 import '../widgets/teleprompter_text_viewer.dart';
+import 'session_results_screen.dart';
 
 class TeleprompterScreen extends StatefulWidget {
   const TeleprompterScreen({super.key});
@@ -49,187 +52,37 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
   }
 
   void _handleFinished() {
-    if (!mounted) return;
-    
-    final teleprompterProvider = Provider.of<TeleprompterProvider>(context, listen: false);
-    final lessonProvider = Provider.of<LessonProvider>(context, listen: false);
-    final lesson = lessonProvider.selectedLesson;
-
-    if (lesson == null) return;
-
-    // Make sure we stop everything
-    teleprompterProvider.stopAll();
-
-    // Generate random realistic metrics for MVP feedback
-    final random = Random();
-    final fluencyScore = 82 + random.nextInt(16); // 82 - 97%
-    final accuracyScore = 80 + random.nextInt(18); // 80 - 97%
-    final elapsedMin = max(1, (teleprompterProvider.elapsedSeconds / 60).ceil());
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          contentPadding: const EdgeInsets.all(24),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.emoji_events_rounded,
-                  color: theme.colorScheme.primary,
-                  size: 48,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Practice Complete!',
-                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Here is your preliminary AI speech feedback:',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onBackground.withOpacity(0.6),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildMetricDial(context, label: 'Fluency', value: '$fluencyScore%'),
-                  _buildMetricDial(context, label: 'Accuracy', value: '$accuracyScore%'),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.mic_none_rounded, color: theme.colorScheme.primary, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Pace felt natural (~${teleprompterProvider.wpm.toInt()} WPM). Nice flow between sentences.',
-                        style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (teleprompterProvider.recordingFilePath != null) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.folder_open_rounded, color: Colors.amber[700], size: 16),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Saved Recording File:',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        teleprompterProvider.recordingFilePath!,
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontFamily: 'monospace',
-                          color: theme.colorScheme.onBackground.withOpacity(0.6),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      onPressed: () {
-                        teleprompterProvider.reset();
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Try Again'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      onPressed: () {
-                        lessonProvider.completeLesson(lesson.id, elapsedMin, fluencyScore);
-                        teleprompterProvider.reset();
-                        Navigator.pop(context); // Close dialog
-                        Navigator.pop(context); // Go back to library
-                      },
-                      child: const Text('Save & Exit'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    _processAndShowResults();
   }
 
-  Widget _buildMetricDial(BuildContext context, {required String label, required String value}) {
-    final theme = Theme.of(context);
-    return Column(
-      children: [
-        Text(
-          value,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: theme.colorScheme.primary,
+  Future<void> _processAndShowResults() async {
+    if (!mounted) return;
+    final prompterProvider = Provider.of<TeleprompterProvider>(context, listen: false);
+    final lessonProvider = Provider.of<LessonProvider>(context, listen: false);
+    final progressProvider = Provider.of<ProgressProvider>(context, listen: false);
+    final lesson = lessonProvider.selectedLesson;
+    if (lesson == null) return;
+
+    try {
+      final result = await prompterProvider.finishAndScoreSession(
+        lesson: lesson,
+        progressProvider: progressProvider,
+      );
+      if (result != null && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SessionResultsScreen(result: result, lesson: lesson),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onBackground.withOpacity(0.5),
-          ),
-        ),
-      ],
-    );
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to score speech session: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -263,6 +116,12 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
         appBar: AppBar(
           title: Text(lesson.category),
           actions: [
+            if (teleprompterProvider.elapsedSeconds > 2)
+              IconButton(
+                icon: const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF10B981), size: 28),
+                onPressed: () => _handleFinished(),
+                tooltip: 'Finish & Grade Speech',
+              ),
             IconButton(
               icon: const Icon(Icons.settings_outlined),
               onPressed: () => _showSettingsBottomSheet(context),
@@ -462,6 +321,40 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
               right: 0,
               child: TeleprompterControls(),
             ),
+            
+            // Speech analysis processing overlay
+            if (teleprompterProvider.isProcessingResult)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black.withOpacity(0.85),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(
+                          color: Color(0xFF6366F1),
+                          strokeWidth: 5,
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Analyzing Speech Fluency...',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Transcribing audio and computing scores',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
