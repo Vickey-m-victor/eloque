@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'lesson_selection_screen.dart';
+import 'profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -15,13 +16,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const LessonSelectionScreen(),
-    const Center(
-      child: Text(
-        'Profile Settings\n(Coming soon in Step 2)',
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 18),
-      ),
-    ),
+    const ProfileScreen(),
   ];
 
   @override
