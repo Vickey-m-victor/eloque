@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/lesson_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/progress_provider.dart';
@@ -14,6 +15,42 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String _userName = 'English Learner';
   int _dailyGoalMinutes = 15; // default daily goal
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _userName = prefs.getString('user_name') ?? 'English Learner';
+        _dailyGoalMinutes = prefs.getInt('daily_goal_minutes') ?? 15;
+      });
+    } catch (e) {
+      debugPrint('Error loading preferences: $e');
+    }
+  }
+
+  Future<void> _saveUserName(String name) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_name', name);
+    } catch (e) {
+      debugPrint('Error saving username: $e');
+    }
+  }
+
+  Future<void> _saveDailyGoal(int minutes) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('daily_goal_minutes', minutes);
+    } catch (e) {
+      debugPrint('Error saving daily goal: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -381,6 +418,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         setState(() {
                           _dailyGoalMinutes = minutes;
                         });
+                        _saveDailyGoal(minutes);
                       }
                     },
                     selectedColor: theme.colorScheme.primary,
@@ -511,13 +549,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+             ElevatedButton(
               onPressed: () {
-                setState(() {
-                  _userName = controller.text.trim().isNotEmpty
-                      ? controller.text.trim()
-                      : _userName;
-                });
+                final trimmed = controller.text.trim();
+                if (trimmed.isNotEmpty) {
+                  setState(() {
+                    _userName = trimmed;
+                  });
+                  _saveUserName(trimmed);
+                }
                 Navigator.pop(context);
               },
               child: const Text('Save'),

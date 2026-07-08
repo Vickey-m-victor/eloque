@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import '../models/practice_result.dart';
+import '../services/database_helper.dart';
 
 class ProgressProvider with ChangeNotifier {
   final List<PracticeResult> _results = [];
-  int _streakDays = 3; // Start with mock streak
+  int _streakDays = 3; // Default starting streak value
+  bool _isLoading = false;
 
   ProgressProvider() {
-    _loadMockData();
+    _loadResults();
   }
 
   List<PracticeResult> get results => List.unmodifiable(_results);
 
   int get streakDays => _streakDays;
+
+  bool get isLoading => _isLoading;
 
   int get completedLessonsCount => _results.map((r) => r.lessonId).toSet().length;
 
@@ -26,13 +30,51 @@ class ProgressProvider with ChangeNotifier {
     return (totalFluency / _results.length).round();
   }
 
-  void saveResult(PracticeResult result) {
-    _results.add(result);
-    
-    // Update streak logic (basic demonstration helper)
-    // If today is a new day practicing, increment or maintain streak.
+  Future<void> _loadResults() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final dbResults = await DatabaseHelper.instance.fetchAllResults();
+      _results.clear();
+      if (dbResults.isEmpty) {
+        // Seed with initial mock results on very first run
+        _loadMockData();
+        for (final res in _results) {
+          await DatabaseHelper.instance.insertResult(res);
+        }
+      } else {
+        _results.addAll(dbResults);
+      }
+    } catch (e) {
+      debugPrint('Error loading results from database: $e');
+      _loadMockData();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> saveResult(PracticeResult result) async {
+    _results.insert(0, result); // insert at the top of the history list
     _streakDays++; 
     notifyListeners();
+
+    try {
+      await DatabaseHelper.instance.insertResult(result);
+    } catch (e) {
+      debugPrint('Error saving result to DB: $e');
+    }
+  }
+
+  Future<void> clearHistory() async {
+    _results.clear();
+    _streakDays = 0;
+    notifyListeners();
+    try {
+      await DatabaseHelper.instance.clearAllResults();
+    } catch (e) {
+      debugPrint('Error clearing DB results: $e');
+    }
   }
 
   void _loadMockData() {
