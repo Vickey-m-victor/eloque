@@ -15,6 +15,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String _userName = 'English Learner';
   int _dailyGoalMinutes = 15; // default daily goal
+  String _apiKey = '';
 
   @override
   void initState() {
@@ -28,6 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _userName = prefs.getString('user_name') ?? 'English Learner';
         _dailyGoalMinutes = prefs.getInt('daily_goal_minutes') ?? 15;
+        _apiKey = prefs.getString('openai_api_key') ?? '';
       });
     } catch (e) {
       debugPrint('Error loading preferences: $e');
@@ -49,6 +51,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await prefs.setInt('daily_goal_minutes', minutes);
     } catch (e) {
       debugPrint('Error saving daily goal: $e');
+    }
+  }
+
+  Future<void> _saveApiKey(String key) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('openai_api_key', key);
+      setState(() {
+        _apiKey = key;
+      });
+    } catch (e) {
+      debugPrint('Error saving API key: $e');
     }
   }
 
@@ -499,6 +513,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           ),
           Divider(color: theme.colorScheme.outlineVariant.withOpacity(0.4), height: 1),
+          // Whisper API Key Tile
+          ListTile(
+            leading: Icon(Icons.vpn_key_rounded, color: theme.colorScheme.primary),
+            title: const Text(
+              'Speech-to-Text API Key',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              _apiKey.isEmpty
+                  ? 'Using Offline Simulation'
+                  : 'OpenAI Whisper Active (sk-...${_apiKey.length > 6 ? _apiKey.substring(_apiKey.length - 4) : ""})',
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: _showEditApiKeyDialog,
+          ),
+          Divider(color: theme.colorScheme.outlineVariant.withOpacity(0.4), height: 1),
           // About App Tile
           ListTile(
             leading: const Icon(Icons.info_outline_rounded, color: Colors.blueGrey),
@@ -559,6 +589,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _saveUserName(trimmed);
                 }
                 Navigator.pop(context);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditApiKeyDialog() {
+    final TextEditingController controller = TextEditingController(text: _apiKey);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Configure OpenAI API Key'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Enter your OpenAI API key to use Whisper for high-accuracy speech transcription. Leave empty to fallback to simulation.',
+                style: TextStyle(fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  labelText: 'API Key',
+                  hintText: 'sk-...',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
+                autofocus: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final key = controller.text.trim();
+                _saveApiKey(key);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(key.isEmpty
+                        ? 'Switched to simulated transcription.'
+                        : 'Whisper STT API Key configured successfully!'),
+                  ),
+                );
               },
               child: const Text('Save'),
             ),
