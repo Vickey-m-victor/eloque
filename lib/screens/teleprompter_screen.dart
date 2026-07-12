@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/lesson_provider.dart';
 import '../providers/teleprompter_provider.dart';
 import '../providers/progress_provider.dart';
-import '../models/practice_result.dart';
 import '../widgets/teleprompter_controls.dart';
 import '../widgets/teleprompter_text_viewer.dart';
 import 'session_results_screen.dart';
@@ -16,7 +15,8 @@ class TeleprompterScreen extends StatefulWidget {
   State<TeleprompterScreen> createState() => _TeleprompterScreenState();
 }
 
-class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTickerProviderStateMixin {
+class _TeleprompterScreenState extends State<TeleprompterScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _waveController;
 
   @override
@@ -26,10 +26,16 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
     // Initialize provider with current lesson's sentences
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final lessonProvider = Provider.of<LessonProvider>(context, listen: false);
-      final teleprompterProvider = Provider.of<TeleprompterProvider>(context, listen: false);
+      final lessonProvider = Provider.of<LessonProvider>(
+        context,
+        listen: false,
+      );
+      final teleprompterProvider = Provider.of<TeleprompterProvider>(
+        context,
+        listen: false,
+      );
       final selectedLesson = lessonProvider.selectedLesson;
-      
+
       if (selectedLesson != null) {
         teleprompterProvider.init(
           selectedLesson.sentences,
@@ -57,9 +63,15 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
 
   Future<void> _processAndShowResults() async {
     if (!mounted) return;
-    final prompterProvider = Provider.of<TeleprompterProvider>(context, listen: false);
+    final prompterProvider = Provider.of<TeleprompterProvider>(
+      context,
+      listen: false,
+    );
     final lessonProvider = Provider.of<LessonProvider>(context, listen: false);
-    final progressProvider = Provider.of<ProgressProvider>(context, listen: false);
+    final progressProvider = Provider.of<ProgressProvider>(
+      context,
+      listen: false,
+    );
     final lesson = lessonProvider.selectedLesson;
     if (lesson == null) return;
 
@@ -72,7 +84,8 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => SessionResultsScreen(result: result, lesson: lesson),
+            builder: (context) =>
+                SessionResultsScreen(result: result, lesson: lesson),
           ),
         );
       }
@@ -93,13 +106,13 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
     final lesson = lessonProvider.selectedLesson;
 
     if (lesson == null) {
-      return const Scaffold(
-        body: Center(child: Text('No lesson selected')),
-      );
+      return const Scaffold(body: Center(child: Text('No lesson selected')));
     }
 
     final isDark = theme.brightness == Brightness.dark;
-    final scaffoldBg = isDark ? const Color(0xFF070B13) : const Color(0xFFF8FAFC);
+    final scaffoldBg = isDark
+        ? const Color(0xFF070B13)
+        : const Color(0xFFF8FAFC);
     final textThemeColor = isDark ? Colors.white : const Color(0xFF0F172A);
 
     return Theme(
@@ -109,7 +122,11 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
           backgroundColor: Colors.transparent,
           elevation: 0,
           iconTheme: IconThemeData(color: textThemeColor),
-          titleTextStyle: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 18),
+          titleTextStyle: TextStyle(
+            color: textThemeColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
       ),
       child: Scaffold(
@@ -118,7 +135,11 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
           actions: [
             if (teleprompterProvider.elapsedSeconds > 2)
               IconButton(
-                icon: const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF10B981), size: 28),
+                icon: const Icon(
+                  Icons.check_circle_outline_rounded,
+                  color: Color(0xFF10B981),
+                  size: 28,
+                ),
                 onPressed: () => _handleFinished(),
                 tooltip: 'Finish & Grade Speech',
               ),
@@ -132,9 +153,7 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
         body: Stack(
           children: [
             // Prompter Script List Text Viewer
-            const Positioned.fill(
-              child: TeleprompterTextViewer(),
-            ),
+            const Positioned.fill(child: TeleprompterTextViewer()),
 
             // Top Gradient Fade Overlay (covers upper text list)
             Positioned(
@@ -174,22 +193,41 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
               ),
             ),
 
-            // Midline Focus Guide Brackets (Centered exactly at 35% viewport height to frame the highlighted text)
-            Positioned(
-              left: 12,
-              right: 12,
-              top: MediaQuery.of(context).size.height * 0.35 - 65,
-              height: 130,
+            // Center spotlight that replaces the old guide lines.
+            Positioned.fill(
               child: IgnorePointer(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.symmetric(
-                      horizontal: BorderSide(
-                        color: theme.colorScheme.primary.withOpacity(isDark ? 0.18 : 0.3),
-                        width: 1.5,
+                child: Align(
+                  alignment: const Alignment(0, -0.08),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 18),
+                    constraints: const BoxConstraints(maxWidth: 720),
+                    height: 170,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(32),
+                      gradient: RadialGradient(
+                        center: Alignment.center,
+                        radius: 1.0,
+                        colors: [
+                          theme.colorScheme.primary.withOpacity(
+                            isDark ? 0.16 : 0.13,
+                          ),
+                          theme.colorScheme.primary.withOpacity(
+                            isDark ? 0.06 : 0.05,
+                          ),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.55, 1.0],
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withOpacity(
+                            isDark ? 0.08 : 0.12,
+                          ),
+                          blurRadius: 48,
+                          spreadRadius: 6,
+                        ),
+                      ],
                     ),
-                    color: theme.colorScheme.primary.withOpacity(isDark ? 0.02 : 0.04),
                   ),
                 ),
               ),
@@ -205,7 +243,10 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
                   if (teleprompterProvider.recordingError != null)
                     Container(
                       margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.red.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
@@ -213,12 +254,20 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline_rounded, color: Colors.red, size: 16),
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            color: Colors.red,
+                            size: 16,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               teleprompterProvider.recordingError!,
-                              style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
@@ -229,21 +278,34 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
                     children: [
                       // Elapsed Timer
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.04),
+                          color: isDark
+                              ? Colors.white.withOpacity(0.06)
+                              : Colors.black.withOpacity(0.04),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.08), 
+                            color: isDark
+                                ? Colors.white.withOpacity(0.08)
+                                : Colors.black.withOpacity(0.08),
                             width: 1,
                           ),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.timer_rounded, color: Color(0xFF06B6D4), size: 16),
+                            const Icon(
+                              Icons.timer_rounded,
+                              color: Color(0xFF06B6D4),
+                              size: 16,
+                            ),
                             const SizedBox(width: 6),
                             Text(
-                              _formatDuration(teleprompterProvider.elapsedSeconds),
+                              _formatDuration(
+                                teleprompterProvider.elapsedSeconds,
+                              ),
                               style: TextStyle(
                                 color: textThemeColor,
                                 fontWeight: FontWeight.bold,
@@ -256,11 +318,17 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
                       // Recording Status Indicator
                       if (teleprompterProvider.isRecording)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEF4444).withOpacity(0.15),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3), width: 1),
+                            border: Border.all(
+                              color: const Color(0xFFEF4444).withOpacity(0.3),
+                              width: 1,
+                            ),
                           ),
                           child: Row(
                             children: [
@@ -296,13 +364,21 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: List.generate(15, (index) {
-                            final amplitude = 5 + sin(_waveController.value * 2 * pi + index) * 14 + Random().nextInt(8);
+                            final amplitude =
+                                5 +
+                                sin(_waveController.value * 2 * pi + index) *
+                                    14 +
+                                Random().nextInt(8);
                             return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 2.5,
+                              ),
                               width: 3.5,
                               height: max(4.0, amplitude),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.secondary.withOpacity(0.85),
+                                color: theme.colorScheme.secondary.withOpacity(
+                                  0.85,
+                                ),
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             );
@@ -321,7 +397,7 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
               right: 0,
               child: TeleprompterControls(),
             ),
-            
+
             // Speech analysis processing overlay
             if (teleprompterProvider.isProcessingResult)
               Positioned.fill(
@@ -369,9 +445,12 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
 
   void _showSettingsBottomSheet(BuildContext context) {
     final theme = Theme.of(context);
-    final teleprompterProvider = Provider.of<TeleprompterProvider>(context, listen: false);
+    final teleprompterProvider = Provider.of<TeleprompterProvider>(
+      context,
+      listen: false,
+    );
     final isDark = theme.brightness == Brightness.dark;
-    
+
     final sheetBg = isDark ? const Color(0xFF111726) : Colors.white;
     final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final subTextColor = isDark ? Colors.white70 : const Color(0xFF334155);
@@ -397,7 +476,9 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.15),
+                        color: isDark
+                            ? Colors.white.withOpacity(0.2)
+                            : Colors.black.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -405,7 +486,11 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
                   const SizedBox(height: 20),
                   Text(
                     'Prompter Layout Settings',
-                    style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 18),
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
                   const SizedBox(height: 24),
 
@@ -415,30 +500,46 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
                     children: [
                       Text(
                         'Font Size',
-                        style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: subTextColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Row(
                         children: [
                           IconButton(
-                            icon: Icon(Icons.remove_circle_outline, color: iconColor),
+                            icon: Icon(
+                              Icons.remove_circle_outline,
+                              color: iconColor,
+                            ),
                             onPressed: () {
-                              teleprompterProvider.setFontSize(teleprompterProvider.fontSize - 2);
+                              teleprompterProvider.setFontSize(
+                                teleprompterProvider.fontSize - 2,
+                              );
                               setStateSheet(() {});
                             },
                           ),
                           Text(
                             '${teleprompterProvider.fontSize.toInt()}',
-                            style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: textColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.add_circle_outline, color: iconColor),
+                            icon: Icon(
+                              Icons.add_circle_outline,
+                              color: iconColor,
+                            ),
                             onPressed: () {
-                              teleprompterProvider.setFontSize(teleprompterProvider.fontSize + 2);
+                              teleprompterProvider.setFontSize(
+                                teleprompterProvider.fontSize + 2,
+                              );
                               setStateSheet(() {});
                             },
                           ),
                         ],
-                      )
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -449,7 +550,10 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
                     children: [
                       Text(
                         'Text Alignment',
-                        style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: subTextColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       ToggleButtons(
                         isSelected: [
@@ -465,10 +569,15 @@ class _TeleprompterScreenState extends State<TeleprompterScreen> with SingleTick
                           setStateSheet(() {});
                         },
                         color: isDark ? Colors.white38 : Colors.black38,
-                        selectedColor: isDark ? Colors.white : theme.colorScheme.primary,
+                        selectedColor: isDark
+                            ? Colors.white
+                            : theme.colorScheme.primary,
                         fillColor: theme.colorScheme.primary.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(10),
-                        constraints: const BoxConstraints(minWidth: 46, minHeight: 36),
+                        constraints: const BoxConstraints(
+                          minWidth: 46,
+                          minHeight: 36,
+                        ),
                         children: const [
                           Icon(Icons.format_align_left_rounded, size: 20),
                           Icon(Icons.format_align_center_rounded, size: 20),

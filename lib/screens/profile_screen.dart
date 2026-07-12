@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../providers/lesson_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/progress_provider.dart';
 
@@ -70,18 +69,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final lessonProvider = Provider.of<LessonProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
     final progressProvider = Provider.of<ProgressProvider>(context);
 
     // Calculate level based on completed lessons
     final int userLevel = 1 + (progressProvider.completedLessonsCount ~/ 3);
-    final int nextLevelLessons = (userLevel * 3);
     final int prevLevelLessons = (userLevel - 1) * 3;
-    final double levelProgress = ((progressProvider.completedLessonsCount - prevLevelLessons) / 3).clamp(0.0, 1.0);
+    final double levelProgress =
+        ((progressProvider.completedLessonsCount - prevLevelLessons) / 3).clamp(
+          0.0,
+          1.0,
+        );
 
     // Calculate daily goal progress
-    final double dailyGoalProgress = (progressProvider.totalPracticeMinutes / _dailyGoalMinutes).clamp(0.0, 1.0);
+    final double dailyGoalProgress =
+        (progressProvider.totalPracticeMinutes / _dailyGoalMinutes).clamp(
+          0.0,
+          1.0,
+        );
 
     return Scaffold(
       appBar: AppBar(
@@ -160,7 +165,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                colors: [
+                  theme.colorScheme.primary,
+                  theme.colorScheme.secondary,
+                ],
               ),
             ),
             child: CircleAvatar(
@@ -191,7 +199,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -237,7 +248,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatsGrid(BuildContext context, ProgressProvider provider, ThemeData theme) {
+  Widget _buildStatsGrid(
+    BuildContext context,
+    ProgressProvider provider,
+    ThemeData theme,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -363,9 +378,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.15),
-        ),
+        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -400,7 +413,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     CircularProgressIndicator(
                       value: progress,
-                      backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                      backgroundColor: theme.colorScheme.primary.withOpacity(
+                        0.1,
+                      ),
                       color: theme.colorScheme.primary,
                       strokeWidth: 5,
                     ),
@@ -437,7 +452,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                     selectedColor: theme.colorScheme.primary,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : theme.colorScheme.onBackground,
+                      color: isSelected
+                          ? Colors.white
+                          : theme.colorScheme.onBackground,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -478,16 +495,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: Switch(
-              value: themeProvider.themeMode == ThemeMode.dark,
+              value: themeProvider.isDarkMode,
               onChanged: (value) {
                 themeProvider.toggleTheme();
               },
             ),
           ),
-          Divider(color: theme.colorScheme.outlineVariant.withOpacity(0.4), height: 1),
+          Divider(
+            color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+            height: 1,
+          ),
           // Audio Storage info tile
           ListTile(
-            leading: Icon(Icons.audio_file_rounded, color: theme.colorScheme.secondary),
+            leading: Icon(
+              Icons.audio_file_rounded,
+              color: theme.colorScheme.secondary,
+            ),
             title: const Text(
               'Audio File Storage',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -512,10 +535,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
             },
           ),
-          Divider(color: theme.colorScheme.outlineVariant.withOpacity(0.4), height: 1),
+          Divider(
+            color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+            height: 1,
+          ),
           // Whisper API Key Tile
           ListTile(
-            leading: Icon(Icons.vpn_key_rounded, color: theme.colorScheme.primary),
+            leading: Icon(
+              Icons.vpn_key_rounded,
+              color: theme.colorScheme.primary,
+            ),
             title: const Text(
               'Speech-to-Text API Key',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -528,10 +557,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: _showEditApiKeyDialog,
           ),
-          Divider(color: theme.colorScheme.outlineVariant.withOpacity(0.4), height: 1),
+          Divider(
+            color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+            height: 1,
+          ),
           // About App Tile
           ListTile(
-            leading: const Icon(Icons.info_outline_rounded, color: Colors.blueGrey),
+            leading: const Icon(
+              Icons.info_outline_rounded,
+              color: Colors.blueGrey,
+            ),
             title: const Text(
               'About Eloque',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -544,7 +579,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 applicationVersion: '1.0.0',
                 applicationIcon: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Icon(Icons.waves_rounded, color: theme.colorScheme.primary, size: 40),
+                  child: Icon(
+                    Icons.waves_rounded,
+                    color: theme.colorScheme.primary,
+                    size: 40,
+                  ),
                 ),
                 children: const [
                   Text(
@@ -560,7 +599,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showEditNameDialog() {
-    final TextEditingController controller = TextEditingController(text: _userName);
+    final TextEditingController controller = TextEditingController(
+      text: _userName,
+    );
     showDialog(
       context: context,
       builder: (context) {
@@ -568,9 +609,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: const Text('Edit Profile Name'),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(
-              hintText: 'Enter name',
-            ),
+            decoration: const InputDecoration(hintText: 'Enter name'),
             autofocus: true,
             maxLength: 20,
           ),
@@ -579,7 +618,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-             ElevatedButton(
+            ElevatedButton(
               onPressed: () {
                 final trimmed = controller.text.trim();
                 if (trimmed.isNotEmpty) {
@@ -599,7 +638,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showEditApiKeyDialog() {
-    final TextEditingController controller = TextEditingController(text: _apiKey);
+    final TextEditingController controller = TextEditingController(
+      text: _apiKey,
+    );
     showDialog(
       context: context,
       builder: (context) {
@@ -638,9 +679,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(key.isEmpty
-                        ? 'Switched to simulated transcription.'
-                        : 'Whisper STT API Key configured successfully!'),
+                    content: Text(
+                      key.isEmpty
+                          ? 'Switched to simulated transcription.'
+                          : 'Whisper STT API Key configured successfully!',
+                    ),
                   ),
                 );
               },

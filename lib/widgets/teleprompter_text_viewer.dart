@@ -29,7 +29,7 @@ class _TeleprompterTextViewerState extends State<TeleprompterTextViewer> {
       if (targetContext != null) {
         Scrollable.ensureVisible(
           targetContext,
-          alignment: 0.35, // Align with the guide lines at 35% viewport height
+          alignment: 0.42,
           duration: const Duration(milliseconds: 400),
           curve: Curves.easeInOut,
         );
@@ -41,6 +41,8 @@ class _TeleprompterTextViewerState extends State<TeleprompterTextViewer> {
   Widget build(BuildContext context) {
     final provider = Provider.of<TeleprompterProvider>(context);
     final theme = Theme.of(context);
+    final mediaQuery = MediaQuery.of(context);
+    final maxContentWidth = mediaQuery.size.width - 48;
 
     // Sync keys length in case sentences updated
     if (_keys.length != provider.sentences.length) {
@@ -55,16 +57,24 @@ class _TeleprompterTextViewerState extends State<TeleprompterTextViewer> {
 
     return ListView.builder(
       controller: _scrollController,
-      // Huge padding on top/bottom so first/last sentence can be centered on screen
+      // Extra padding so the active sentence can sit inside the center spotlight.
       padding: EdgeInsets.symmetric(
         horizontal: 24,
-        vertical: MediaQuery.of(context).size.height * 0.35,
+        vertical: MediaQuery.of(context).size.height * 0.28,
       ),
       itemCount: provider.sentences.length,
       itemBuilder: (context, index) {
         final sentence = provider.sentences[index];
         final isActive = index == provider.activeSentenceIndex;
         final isPassed = index < provider.activeSentenceIndex;
+        final effectiveFontSize = isActive
+            ? _getAdaptiveFontSize(
+                sentence,
+                provider.fontSize,
+                maxContentWidth,
+                provider.textAlign,
+              )
+            : provider.fontSize;
 
         // Custom fading levels for premium visual hierarchy
         double textOpacity = 0.35;
@@ -79,7 +89,9 @@ class _TeleprompterTextViewerState extends State<TeleprompterTextViewer> {
             ? theme.colorScheme.primary
             : theme.colorScheme.onBackground.withOpacity(textOpacity);
 
-        final FontWeight fontWeight = isActive ? FontWeight.w800 : FontWeight.w500;
+        final FontWeight fontWeight = isActive
+            ? FontWeight.w800
+            : FontWeight.w500;
 
         return GestureDetector(
           key: _keys[index],
@@ -88,29 +100,77 @@ class _TeleprompterTextViewerState extends State<TeleprompterTextViewer> {
             provider.jumpToSentence(index);
           },
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-            margin: const EdgeInsets.symmetric(vertical: 2),
-            decoration: BoxDecoration(
-              color: isActive 
-                  ? theme.colorScheme.primary.withOpacity(0.08) 
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
+            duration: const Duration(milliseconds: 220),
+            margin: EdgeInsets.symmetric(
+              vertical: isActive ? 12 : 4,
+              horizontal: isActive ? 0 : 8,
             ),
-            child: Text(
-              sentence,
-              textAlign: provider.textAlign,
+            padding: EdgeInsets.symmetric(
+              vertical: isActive ? 18 : 10,
+              horizontal: isActive ? 22 : 12,
+            ),
+            decoration: BoxDecoration(
+              color: isActive
+                  ? theme.colorScheme.primary.withOpacity(0.14)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(isActive ? 28 : 16),
+              border: isActive
+                  ? Border.all(
+                      color: theme.colorScheme.primary.withOpacity(0.18),
+                      width: 1,
+                    )
+                  : null,
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: theme.colorScheme.primary.withOpacity(0.12),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 250),
               style: TextStyle(
-                fontSize: provider.fontSize,
+                fontSize: isActive ? effectiveFontSize + 2 : effectiveFontSize,
                 fontWeight: fontWeight,
                 color: textColor,
-                height: 1.5,
+                height: isActive ? 1.22 : 1.45,
+              ),
+              child: Text(
+                sentence,
+                textAlign: isActive ? TextAlign.center : provider.textAlign,
+                maxLines: isActive ? 4 : 3,
+                overflow: TextOverflow.ellipsis,
+                softWrap: true,
               ),
             ),
           ),
         );
       },
     );
+  }
+
+  double _getAdaptiveFontSize(
+    String sentence,
+    double baseFontSize,
+    double maxWidth,
+    TextAlign alignment,
+  ) {
+    final words = sentence
+        .split(RegExp(r'\s+'))
+        .where((word) => word.isNotEmpty)
+        .length;
+    final longSentencePenalty = words > 12 ? (words - 12) * 0.7 : 0.0;
+    final widthPenalty = maxWidth < 460 ? (460 - maxWidth) * 0.09 : 0.0;
+    final alignmentBonus =
+        alignment == TextAlign.left || alignment == TextAlign.right
+        ? 0.75
+        : 0.0;
+
+    return (baseFontSize - longSentencePenalty - widthPenalty + alignmentBonus)
+        .clamp(17.0, baseFontSize);
   }
 
   @override

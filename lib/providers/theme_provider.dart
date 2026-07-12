@@ -12,7 +12,8 @@ class ThemeProvider with ChangeNotifier {
 
   bool get isDarkMode {
     if (_themeMode == ThemeMode.system) {
-      return true; 
+      return WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+          Brightness.dark;
     }
     return _themeMode == ThemeMode.dark;
   }
@@ -35,16 +36,15 @@ class ThemeProvider with ChangeNotifier {
   }
 
   Future<void> toggleTheme() async {
-    if (_themeMode == ThemeMode.light) {
-      _themeMode = ThemeMode.dark;
-    } else {
-      _themeMode = ThemeMode.light;
-    }
+    _themeMode = isDarkMode ? ThemeMode.light : ThemeMode.dark;
     notifyListeners();
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('theme_mode', _themeMode == ThemeMode.light ? 'light' : 'dark');
+      await prefs.setString(
+        'theme_mode',
+        _themeMode == ThemeMode.light ? 'light' : 'dark',
+      );
     } catch (e) {
       debugPrint('Error saving theme to prefs: $e');
     }

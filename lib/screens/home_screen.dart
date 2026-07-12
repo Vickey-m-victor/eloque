@@ -24,11 +24,13 @@ class HomeScreen extends StatelessWidget {
     final dailyChallengeLesson = Lesson(
       id: 'challenge_day_1',
       title: 'Daily Challenge: The Power of Perseverance',
-      description: 'Practice this motivational message by Vincent van Gogh to improve your vocal projection and emotional resonance.',
+      description:
+          'Practice this motivational message by Vincent van Gogh to improve your vocal projection and emotional resonance.',
       category: 'Inspirational Quotes',
       difficulty: 'Intermediate',
       estimatedMinutes: 1,
-      content: 'Great things are not done by impulse, but by a series of small things brought together. (Pause) Everyday, we take tiny steps. Each word we pronounce correctly, each phrase we practice with confidence, builds towards our fluency. Do not be discouraged by slow progress. Keep moving forward, keep speaking, and trust the process. You are getting better every single day.',
+      content:
+          'Great things are not done by impulse, but by a series of small things brought together. (Pause) Everyday, we take tiny steps. Each word we pronounce correctly, each phrase we practice with confidence, builds towards our fluency. Do not be discouraged by slow progress. Keep moving forward, keep speaking, and trust the process. You are getting better every single day.',
       track: LessonTrack.conversational,
     );
 
@@ -61,7 +63,7 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(
-              themeProvider.themeMode == ThemeMode.dark
+              themeProvider.isDarkMode
                   ? Icons.light_mode_rounded
                   : Icons.dark_mode_rounded,
               color: theme.colorScheme.onBackground,
@@ -157,7 +159,7 @@ class HomeScreen extends StatelessWidget {
                       color: theme.colorScheme.primary.withOpacity(0.3),
                       blurRadius: 16,
                       offset: const Offset(0, 8),
-                    )
+                    ),
                   ],
                 ),
                 child: ClipRRect(
@@ -181,7 +183,10 @@ class HomeScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(8),
@@ -245,7 +250,7 @@ class HomeScreen extends StatelessWidget {
                                 ],
                               ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -316,11 +321,7 @@ class HomeScreen extends StatelessWidget {
               color: iconColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 20,
-            ),
+            child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(height: 12),
           Text(
