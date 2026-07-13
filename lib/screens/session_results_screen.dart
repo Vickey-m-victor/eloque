@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import '../models/practice_result.dart';
 import '../models/lesson.dart';
 import '../providers/teleprompter_provider.dart';
+import '../utils/alignment_helper.dart';
 
 class SessionResultsScreen extends StatefulWidget {
   final PracticeResult result;
@@ -589,53 +590,95 @@ class _SessionResultsScreenState extends State<SessionResultsScreen> {
       );
     }
 
-    // Identify filler words and highlight them in the text
-    final List<String> words = transcript.split(RegExp(r'\s+'));
+    final isConversational = widget.lesson.track == LessonTrack.conversational;
     final List<TextSpan> textSpans = [];
 
-    final fillerList = ['um', 'uh', 'like', 'you', 'know'];
+    if (isConversational) {
+      final alignedWords = AlignmentHelper.align(widget.lesson.content, transcript);
+      for (final aligned in alignedWords) {
+        Color wordColor;
+        TextDecoration? decoration;
+        FontWeight? fontWeight;
+        Color? bgColor;
 
-    for (int i = 0; i < words.length; i++) {
-      final word = words[i];
-      final cleanWord = word.replaceAll(RegExp(r'[.,!?()]'), '').toLowerCase();
-
-      bool isFiller = false;
-      // Handle simple word fillers
-      if (fillerList.contains(cleanWord)) {
-        isFiller = true;
-      }
-      
-      // Also handle "you know" phrase by checking next word
-      if (cleanWord == 'you' && i + 1 < words.length) {
-        final nextClean = words[i + 1].replaceAll(RegExp(r'[.,!?()]'), '').toLowerCase();
-        if (nextClean == 'know') {
-          isFiller = true;
+        switch (aligned.status) {
+          case AlignmentStatus.correct:
+            wordColor = const Color(0xFF10B981); // Emerald Green
+            fontWeight = FontWeight.bold;
+            break;
+          case AlignmentStatus.mispronounced:
+            wordColor = const Color(0xFFEF4444); // Red
+            decoration = TextDecoration.underline;
+            fontWeight = FontWeight.w600;
+            break;
+          case AlignmentStatus.skipped:
+            wordColor = isDark ? Colors.white38 : Colors.black38;
+            decoration = TextDecoration.lineThrough;
+            break;
+          case AlignmentStatus.filler:
+            wordColor = theme.colorScheme.tertiary; // Orange/Pink
+            fontWeight = FontWeight.bold;
+            bgColor = theme.colorScheme.tertiary.withOpacity(0.12);
+            break;
         }
-      } else if (cleanWord == 'know' && i > 0) {
-        final prevClean = words[i - 1].replaceAll(RegExp(r'[.,!?()]'), '').toLowerCase();
-        if (prevClean == 'you') {
-          isFiller = true;
-        }
-      }
 
-      if (isFiller) {
         textSpans.add(
           TextSpan(
-            text: '$word ',
+            text: '${aligned.text} ',
             style: TextStyle(
-              color: theme.colorScheme.tertiary,
-              fontWeight: FontWeight.bold,
-              backgroundColor: theme.colorScheme.tertiary.withOpacity(0.12),
+              color: wordColor,
+              decoration: decoration,
+              fontWeight: fontWeight,
+              backgroundColor: bgColor,
             ),
           ),
         );
-      } else {
-        textSpans.add(
-          TextSpan(
-            text: '$word ',
-            style: TextStyle(color: textColor.withOpacity(0.85)),
-          ),
-        );
+      }
+    } else {
+      // Identify filler words and highlight them in the text (Interview Prep fallback)
+      final List<String> words = transcript.split(RegExp(r'\s+'));
+      final fillerList = ['um', 'uh', 'like', 'you', 'know'];
+
+      for (int i = 0; i < words.length; i++) {
+        final word = words[i];
+        final cleanWord = word.replaceAll(RegExp(r'[.,!?()]'), '').toLowerCase();
+
+        bool isFiller = false;
+        if (fillerList.contains(cleanWord)) {
+          isFiller = true;
+        }
+        
+        if (cleanWord == 'you' && i + 1 < words.length) {
+          final nextClean = words[i + 1].replaceAll(RegExp(r'[.,!?()]'), '').toLowerCase();
+          if (nextClean == 'know') {
+            isFiller = true;
+          }
+        } else if (cleanWord == 'know' && i > 0) {
+          final prevClean = words[i - 1].replaceAll(RegExp(r'[.,!?()]'), '').toLowerCase();
+          if (prevClean == 'you') {
+            isFiller = true;
+          }
+        }
+
+        if (isFiller) {
+          textSpans.add(
+            TextSpan(
+              text: '$word ',
+              style: TextStyle(
+                color: theme.colorScheme.tertiary,
+                fontWeight: FontWeight.bold,
+                backgroundColor: theme.colorScheme.tertiary.withOpacity(0.12),
+              ),
+            ),
+          );
+        } else {
+          textSpans.add(
+            TextSpan(
+              text: '$word ',
+              style: TextStyle(color: textColor.withOpacity(0.85)),
+            ),
+          );
+        }
       }
     }
 
@@ -650,14 +693,14 @@ class _SessionResultsScreenState extends State<SessionResultsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Speech Transcript',
+                  isConversational ? 'Pronunciation Feedback' : 'Speech Transcript',
                   style: TextStyle(
                     color: textColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
                 ),
-                if (widget.result.fillerWordCount > 0)
+                if (!isConversational && widget.result.fillerWordCount > 0)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -675,6 +718,19 @@ class _SessionResultsScreenState extends State<SessionResultsScreen> {
                   ),
               ],
             ),
+            if (isConversational) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 12,
+                runSpacing: 6,
+                children: [
+                  _buildLegendItem(const Color(0xFF10B981), 'Correct'),
+                  _buildLegendItem(const Color(0xFFEF4444), 'Mispronounced / Extra', isUnderlined: true),
+                  _buildLegendItem(isDark ? Colors.white38 : Colors.black38, 'Skipped', isStrikethrough: true),
+                  _buildLegendItem(theme.colorScheme.tertiary, 'Filler Word'),
+                ],
+              ),
+            ],
             const SizedBox(height: 12),
             Container(
               constraints: const BoxConstraints(maxHeight: 180),
@@ -690,7 +746,7 @@ class _SessionResultsScreenState extends State<SessionResultsScreen> {
               child: SingleChildScrollView(
                 child: RichText(
                   text: TextSpan(
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       height: 1.5,
                       fontFamily: 'PlusJakartaSans',
@@ -703,6 +759,37 @@ class _SessionResultsScreenState extends State<SessionResultsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLegendItem(Color color, String label, {bool isStrikethrough = false, bool isUnderlined = false}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: isStrikethrough ? Colors.transparent : color,
+            shape: BoxShape.circle,
+            border: isStrikethrough ? Border.all(color: color, width: 1.5) : null,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: color,
+            fontWeight: FontWeight.bold,
+            decoration: isStrikethrough
+                ? TextDecoration.lineThrough
+                : isUnderlined
+                    ? TextDecoration.underline
+                    : null,
+          ),
+        ),
+      ],
     );
   }
 }

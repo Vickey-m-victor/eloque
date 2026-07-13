@@ -12,7 +12,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  int _dailyGoalMinutes = 15; // default daily goal
   String _apiKey = '';
 
   @override
@@ -25,20 +24,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        _dailyGoalMinutes = prefs.getInt('daily_goal_minutes') ?? 15;
         _apiKey = prefs.getString('openai_api_key') ?? '';
       });
     } catch (e) {
       debugPrint('Error loading preferences: $e');
-    }
-  }
-
-  Future<void> _saveDailyGoal(int minutes) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('daily_goal_minutes', minutes);
-    } catch (e) {
-      debugPrint('Error saving daily goal: $e');
     }
   }
 
@@ -72,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // Calculate daily goal progress
     final double dailyGoalProgress =
-        (progressProvider.totalPracticeMinutes / _dailyGoalMinutes).clamp(
+        (progressProvider.totalPracticeMinutes / progressProvider.dailyGoalMinutes).clamp(
           0.0,
           1.0,
         );
@@ -109,7 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 28),
 
               // 3. Daily Practice Goal
-              _buildDailyGoalCard(theme, dailyGoalProgress),
+              _buildDailyGoalCard(theme, dailyGoalProgress, progressProvider),
               const SizedBox(height: 28),
 
               // 4. Settings Section
@@ -360,7 +349,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDailyGoalCard(ThemeData theme, double progress) {
+  Widget _buildDailyGoalCard(ThemeData theme, double progress, ProgressProvider progressProvider) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -428,7 +417,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [5, 10, 15, 30].map((minutes) {
-              final isSelected = _dailyGoalMinutes == minutes;
+              final isSelected = progressProvider.dailyGoalMinutes == minutes;
               return Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -437,10 +426,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     selected: isSelected,
                     onSelected: (selected) {
                       if (selected) {
-                        setState(() {
-                          _dailyGoalMinutes = minutes;
-                        });
-                        _saveDailyGoal(minutes);
+                        progressProvider.updateDailyGoal(minutes);
                       }
                     },
                     selectedColor: theme.colorScheme.primary,
@@ -493,6 +479,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 themeProvider.toggleTheme();
               },
             ),
+          ),
+          Divider(
+            color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+            height: 1,
+          ),
+          // Accent Color Selector Row
+          ListTile(
+            leading: Icon(
+              Icons.color_lens_rounded,
+              color: theme.colorScheme.primary,
+            ),
+            title: const Text(
+              'Accent Theme',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              ThemeProvider.accentThemes[themeProvider.accentColorName]?.displayName ?? '',
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => _showAccentColorBottomSheet(context, themeProvider),
           ),
           Divider(
             color: theme.colorScheme.outlineVariant.withOpacity(0.4),
@@ -672,8 +678,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SnackBar(
                     content: Text(
                       key.isEmpty
-                          ? 'Switched to simulated transcription.'
-                          : 'Whisper STT API Key configured successfully!',
+                           ? 'Switched to simulated transcription.'
+                           : 'Whisper STT API Key configured successfully!',
                     ),
                   ),
                 );
@@ -681,6 +687,104 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: const Text('Save'),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showAccentColorBottomSheet(BuildContext context, ThemeProvider themeProvider) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        final theme = Theme.of(context);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Select Accent Theme',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Personalize the visual style of your speech workspace.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onBackground.withOpacity(0.6),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ...ThemeProvider.accentThemes.entries.map((entry) {
+                  final name = entry.key;
+                  final details = entry.value;
+                  final isSelected = themeProvider.accentColorName == name;
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? theme.colorScheme.primary.withOpacity(0.08)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSelected
+                            ? theme.colorScheme.primary.withOpacity(0.2)
+                            : Colors.transparent,
+                      ),
+                    ),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      onTap: () {
+                        themeProvider.updateAccentColor(name);
+                        Navigator.pop(context);
+                      },
+                      leading: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: details.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: details.secondary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
+                      ),
+                      title: Text(
+                        details.displayName,
+                        style: TextStyle(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected ? theme.colorScheme.primary : theme.textTheme.bodyLarge?.color,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Icon(Icons.check_circle_rounded, color: theme.colorScheme.primary)
+                          : null,
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
         );
       },
     );

@@ -8,6 +8,7 @@ class ProgressProvider with ChangeNotifier {
   int _streakDays = 3; // Default starting streak value
   bool _isLoading = false;
   String _userName = 'English Learner';
+  int _dailyGoalMinutes = 15;
 
   ProgressProvider() {
     _loadResults();
@@ -15,11 +16,13 @@ class ProgressProvider with ChangeNotifier {
   }
 
   String get userName => _userName;
+  int get dailyGoalMinutes => _dailyGoalMinutes;
 
   Future<void> _loadPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       _userName = prefs.getString('user_name') ?? 'English Learner';
+      _dailyGoalMinutes = prefs.getInt('daily_goal_minutes') ?? 15;
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading user preferences in provider: $e');
@@ -34,6 +37,17 @@ class ProgressProvider with ChangeNotifier {
       await prefs.setString('user_name', newName);
     } catch (e) {
       debugPrint('Error saving user name in provider: $e');
+    }
+  }
+
+  Future<void> updateDailyGoal(int minutes) async {
+    _dailyGoalMinutes = minutes;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('daily_goal_minutes', minutes);
+    } catch (e) {
+      debugPrint('Error saving daily goal in provider: $e');
     }
   }
 

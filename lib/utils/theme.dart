@@ -2,20 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Brand colors
-  static const Color primaryColor = Color(0xFF6366F1); // Modern Indigo
-  static const Color secondaryColor = Color(0xFF06B6D4); // Electric Cyan
-  static const Color accentColor = Color(0xFFEC4899); // Coral Pink for micro-animations/badges
-
-  static ThemeData get lightTheme {
+  static ThemeData getLightTheme(Color primary, Color secondary, Color accent) {
     final base = ThemeData.light(useMaterial3: true);
     return base.copyWith(
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
+        seedColor: primary,
         brightness: Brightness.light,
-        primary: primaryColor,
-        secondary: secondaryColor,
-        tertiary: accentColor,
+        primary: primary,
+        secondary: secondary,
+        tertiary: accent,
         background: const Color(0xFFF8FAFC),
         surface: Colors.white,
         surfaceVariant: const Color(0xFFF1F5F9),
@@ -60,15 +55,15 @@ class AppTheme {
     );
   }
 
-  static ThemeData get darkTheme {
+  static ThemeData getDarkTheme(Color primary, Color secondary, Color accent) {
     final base = ThemeData.dark(useMaterial3: true);
     return base.copyWith(
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
+        seedColor: primary,
         brightness: Brightness.dark,
-        primary: const Color(0xFF818CF8), // Slightly brighter for dark mode contrast
-        secondary: const Color(0xFF22D3EE),
-        tertiary: accentColor,
+        primary: primary,
+        secondary: secondary,
+        tertiary: accent,
         background: const Color(0xFF0B0F19), // Midnight slate
         surface: const Color(0xFF151D30), // Sleek navy dark card background
         surfaceVariant: const Color(0xFF1E293B),

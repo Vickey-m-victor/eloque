@@ -31,8 +31,16 @@ class EloqueApp extends StatelessWidget {
           return MaterialApp(
             title: 'Eloque',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
+            theme: AppTheme.getLightTheme(
+              themeProvider.primaryColor,
+              themeProvider.secondaryColor,
+              themeProvider.accentColor,
+            ),
+            darkTheme: AppTheme.getDarkTheme(
+              themeProvider.primaryColor,
+              themeProvider.secondaryColor,
+              themeProvider.accentColor,
+            ),
             themeMode: themeProvider.themeMode,
             initialRoute: '/',
             routes: {

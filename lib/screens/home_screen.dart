@@ -209,6 +209,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: theme.colorScheme.onBackground.withOpacity(0.6),
                 ),
               ),
+              const SizedBox(height: 20),
+
+              // Daily Goal Progress Card
+              _buildDailyGoalCard(context, progressProvider, theme),
               const SizedBox(height: 24),
 
               // Statistics Section
@@ -401,6 +405,87 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDailyGoalCard(
+    BuildContext context,
+    ProgressProvider provider,
+    ThemeData theme,
+  ) {
+    final int minutesPracticed = provider.totalPracticeMinutes;
+    final int goalMinutes = provider.dailyGoalMinutes;
+    final double progress = (minutesPracticed / goalMinutes).clamp(0.0, 1.0);
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.01),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.insights_rounded,
+                    color: theme.colorScheme.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Daily Practice Goal',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                '$minutesPracticed / $goalMinutes min',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: theme.colorScheme.primary.withOpacity(0.08),
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            progress >= 1.0
+                ? 'Goal completed! Amazing job today! 🎉'
+                : 'You are ${(progress * 100).toInt()}% of the way to your daily goal.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onBackground.withOpacity(0.6),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
