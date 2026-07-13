@@ -12,7 +12,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String _userName = 'English Learner';
   int _dailyGoalMinutes = 15; // default daily goal
   String _apiKey = '';
 
@@ -26,21 +25,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        _userName = prefs.getString('user_name') ?? 'English Learner';
         _dailyGoalMinutes = prefs.getInt('daily_goal_minutes') ?? 15;
         _apiKey = prefs.getString('openai_api_key') ?? '';
       });
     } catch (e) {
       debugPrint('Error loading preferences: $e');
-    }
-  }
-
-  Future<void> _saveUserName(String name) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_name', name);
-    } catch (e) {
-      debugPrint('Error saving username: $e');
     }
   }
 
@@ -112,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. Profile Header Widget
-              _buildProfileHeader(theme, userLevel, levelProgress),
+              _buildProfileHeader(theme, userLevel, levelProgress, progressProvider.userName),
               const SizedBox(height: 24),
 
               // 2. Statistics Grid
@@ -140,110 +129,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader(ThemeData theme, int level, double progress) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+  Widget _buildProfileHeader(ThemeData theme, int level, double progress, String userName) {
+    return InkWell(
+      onTap: _showEditNameDialog,
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withOpacity(0.4),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Avatar with gradient border
-          Container(
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  theme.colorScheme.primary,
-                  theme.colorScheme.secondary,
-                ],
+        child: Row(
+          children: [
+            // Avatar with gradient border
+            Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    theme.colorScheme.primary,
+                    theme.colorScheme.secondary,
+                  ],
+                ),
               ),
-            ),
-            child: CircleAvatar(
-              radius: 36,
-              backgroundColor: theme.colorScheme.background,
-              child: Text(
-                _userName.isNotEmpty ? _userName[0].toUpperCase() : 'U',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
+              child: CircleAvatar(
+                radius: 36,
+                backgroundColor: theme.colorScheme.background,
+                child: Text(
+                  userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 16),
-          // User Details & Level Progress
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _userName,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Level $level Speaker',
-                    style: TextStyle(
-                      color: theme.colorScheme.primary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
+            const SizedBox(width: 16),
+            // User Details & Level Progress
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    userName,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                const SizedBox(height: 10),
-                // Level progress bar
-                Row(
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 6,
-                          backgroundColor: theme.colorScheme.surfaceVariant,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${(progress * 100).toInt()}%',
-                      style: theme.textTheme.bodySmall?.copyWith(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Level $level Speaker',
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Level progress bar
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 6,
+                            backgroundColor: theme.colorScheme.surfaceVariant,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${(progress * 100).toInt()}%',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -599,8 +592,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showEditNameDialog() {
+    final progressProvider = Provider.of<ProgressProvider>(context, listen: false);
     final TextEditingController controller = TextEditingController(
-      text: _userName,
+      text: progressProvider.userName,
     );
     showDialog(
       context: context,
@@ -622,10 +616,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 final trimmed = controller.text.trim();
                 if (trimmed.isNotEmpty) {
-                  setState(() {
-                    _userName = trimmed;
-                  });
-                  _saveUserName(trimmed);
+                  progressProvider.updateUserName(trimmed);
                 }
                 Navigator.pop(context);
               },

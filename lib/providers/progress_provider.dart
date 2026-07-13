@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/practice_result.dart';
 import '../services/database_helper.dart';
 
@@ -6,9 +7,34 @@ class ProgressProvider with ChangeNotifier {
   final List<PracticeResult> _results = [];
   int _streakDays = 3; // Default starting streak value
   bool _isLoading = false;
+  String _userName = 'English Learner';
 
   ProgressProvider() {
     _loadResults();
+    _loadPreferences();
+  }
+
+  String get userName => _userName;
+
+  Future<void> _loadPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _userName = prefs.getString('user_name') ?? 'English Learner';
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading user preferences in provider: $e');
+    }
+  }
+
+  Future<void> updateUserName(String newName) async {
+    _userName = newName;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_name', newName);
+    } catch (e) {
+      debugPrint('Error saving user name in provider: $e');
+    }
   }
 
   List<PracticeResult> get results => List.unmodifiable(_results);

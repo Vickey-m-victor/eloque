@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/lesson_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/progress_provider.dart';
@@ -7,8 +8,119 @@ import '../models/lesson.dart';
 import '../widgets/lesson_card.dart';
 import 'teleprompter_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkFirstRun();
+    });
+  }
+
+  Future<void> _checkFirstRun() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+      if (!hasSeenOnboarding) {
+        _showOnboardingDialog();
+      }
+    } catch (e) {
+      debugPrint('Error checking onboarding: $e');
+    }
+  }
+
+  void _showOnboardingDialog() {
+    final TextEditingController controller = TextEditingController();
+    final progressProvider = Provider.of<ProgressProvider>(context, listen: false);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        final theme = Theme.of(context);
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.waving_hand_rounded, color: theme.colorScheme.primary),
+              const SizedBox(width: 10),
+              const Text('Welcome to Eloque!'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Let\'s customize your speech training. What is your name?',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: 'Your Name',
+                  hintText: 'e.g., Alex',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  prefixIcon: const Icon(Icons.person_outline_rounded),
+                ),
+                textCapitalization: TextCapitalization.words,
+                maxLength: 20,
+                autofocus: true,
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              onPressed: () async {
+                final name = controller.text.trim();
+                final displayName = name.isNotEmpty ? name : 'Speaker';
+                await progressProvider.updateUserName(displayName);
+                
+                try {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('has_seen_onboarding', true);
+                } catch (e) {
+                  debugPrint('Error saving onboarding flag: $e');
+                }
+                
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Welcome, $displayName! Let\'s level up your speaking.'),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Get Started'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +196,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               // Greeting Section
               Text(
-                'Welcome back, Learner! 👋',
+                'Welcome back, ${progressProvider.userName}! 👋',
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
